@@ -78,6 +78,15 @@ const reminderController = {
       const userId = req.user.user_id;
       const reminderId = parseInt(req.params.id);
 
+      console.log(`[DELETE] Request by User ${userId} for Reminder ID: ${req.params.id} (parsed: ${reminderId})`);
+
+      if (isNaN(reminderId)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID reminder tidak valid",
+        });
+      }
+
       await ReminderService.delete(reminderId, userId);
 
       res.status(200).json({
@@ -85,6 +94,7 @@ const reminderController = {
         message: "Reminder berhasil dihapus",
       });
     } catch (err) {
+      console.error(`[DELETE ERROR] ${err.message}`);
       next(err);
     }
   },

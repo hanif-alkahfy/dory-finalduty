@@ -44,7 +44,8 @@ const schedulerService = {
 
             console.log(`[ID:${reminder.id}] Berhasil dikirim ke ${reminder.phone_number}`);
           } catch (err) {
-            console.error(`[ID:${reminder.id}] Gagal dikirim: ${err.message}`);
+            const errorTime = new Date().toISOString();
+            console.error(`[${errorTime}] [ID:${reminder.id}] Gagal dikirim ke ${reminder.phone_number}: ${err.message}`);
 
             // Update status ke 'failed'
             await ReminderRepository.updateStatus(reminder.id, "failed");

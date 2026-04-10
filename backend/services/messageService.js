@@ -8,6 +8,20 @@ const {
 const { WhatsAppError } = require("../utils/errors");
 
 /**
+ * Helper untuk melakukan retry pada fungsi async.
+ */
+async function withRetry(fn, retries = 2, delay = 3000) {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries <= 0) throw err;
+    console.warn(`[Retry] Terjadi kesalahan: ${err.message}. Mencoba lagi dalam ${delay / 1000}s... (Sisa retry: ${retries})`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return withRetry(fn, retries - 1, delay);
+  }
+}
+
+/**
  * Service untuk logika pengiriman pesan.
  */
 const messageService = {
@@ -28,7 +42,8 @@ const messageService = {
     validateMessage(message);
 
     try {
-      await WhatsAppClient.sendMessage(recipient, message, type);
+      // Gunakan retry untuk pengiriman manual juga
+      await withRetry(() => WhatsAppClient.sendMessage(recipient, message, type));
 
       // Catat log sukses
       await MessageLogRepository.create({
@@ -48,7 +63,7 @@ const messageService = {
         error_message: err.message,
       });
 
-      throw new WhatsAppError(502, `Gagal mengirim pesan WhatsApp: ${err.message}`);
+      throw new WhatsAppError(502, `Gagal mengirim pesan WhatsApp setelah beberapa percobaan: ${err.message}`);
     }
   },
 
@@ -58,10 +73,12 @@ const messageService = {
    * @returns {Promise<any>}
    */
   async sendScheduled(reminder) {
-    return WhatsAppClient.sendMessage(
-      reminder.phone_number,
-      reminder.message,
-      reminder.recipient_type
+    return withRetry(() => 
+      WhatsAppClient.sendMessage(
+        reminder.phone_number,
+        reminder.message,
+        reminder.recipient_type
+      )
     );
   },
 };

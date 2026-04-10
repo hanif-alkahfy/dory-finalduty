@@ -4,6 +4,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderTable from '../components/ReminderTable';
 import ReminderForm from '../components/ReminderForm';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -14,6 +15,11 @@ export default function DashboardPage() {
   // State untuk Modal Form
   const [showForm, setShowForm] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
+  
+  // State untuk Modal Delete
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchReminders = useCallback(async () => {
     setLoading(true);
@@ -43,14 +49,24 @@ export default function DashboardPage() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus reminder ini?')) return;
+  const handleDeleteRequest = (id) => {
+    setDeletingId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
     
+    setDeleteLoading(true);
     try {
-      await api.delete(`/reminders/${id}`);
+      await api.delete(`/reminders/${deletingId}`);
+      setShowDeleteModal(false);
+      setDeletingId(null);
       fetchReminders();
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal menghapus reminder');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -141,7 +157,7 @@ export default function DashboardPage() {
             <ReminderTable 
               reminders={reminders} 
               onEdit={handleEdit} 
-              onDelete={handleDelete} 
+              onDelete={handleDeleteRequest} 
             />
           )}
         </div>
@@ -156,6 +172,14 @@ export default function DashboardPage() {
         />
       )}
       
+      {/* Modal Delete */}
+      <DeleteConfirmModal 
+        isOpen={showDeleteModal}
+        isLoading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
+
       <footer className="py-6 border-t border-slate-800/50 text-center text-slate-600 text-xs">
         DoryMind System &copy; {new Date().getFullYear()} – All Rights Reserved
       </footer>
