@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import ManualMessagePage from './pages/ManualMessagePage';
 
 // Wrapper untuk proteksi route yang memerlukan autentikasi
 function ProtectedRoute({ children }) {
@@ -20,6 +21,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <ManualMessagePage />
             </ProtectedRoute>
           }
         />

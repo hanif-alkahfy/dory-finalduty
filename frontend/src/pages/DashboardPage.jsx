@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ReminderTable from '../components/ReminderTable';
@@ -83,13 +84,13 @@ export default function DashboardPage() {
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">DoryMind</span>
             </div>
             <div className="flex items-center gap-4">
-              <button
+              <Link
                 id="btn-manual"
-                onClick={() => window.location.href = '/messages'}
-                className="text-sm text-slate-400 hover:text-white transition hidden sm:block"
+                to="/messages"
+                className="text-sm text-slate-400 hover:text-white transition hidden sm:block font-medium"
               >
                 Pesan Manual
-              </button>
+              </Link>
               <button
                 id="btn-logout"
                 onClick={logout}
