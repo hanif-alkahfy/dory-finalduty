@@ -36,8 +36,8 @@ export default function ReminderTable({ reminders, onEdit, onDelete }) {
         <tbody className="divide-y divide-slate-700/50">
           {reminders.map((r) => (
             <tr key={r.id} className="bg-slate-800/30 hover:bg-slate-800/60 transition-colors">
-              <td className="px-4 py-3 font-mono text-slate-300 max-w-[160px] truncate">
-                {r.phone_number}
+              <td className="px-4 py-3 font-medium text-slate-300 max-w-[200px] truncate" title={r.phone_number}>
+                {r.recipient_name || r.phone_number}
               </td>
               <td className="px-4 py-3 text-slate-300 max-w-[200px]">
                 <span className="line-clamp-2">{r.message}</span>

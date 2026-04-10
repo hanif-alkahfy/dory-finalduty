@@ -40,22 +40,31 @@ client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
 });
 
+/**
+ * Cache untuk menyimpan nama grup (ID -> Nama)
+ */
+const groupNameCache = {};
+
 // Event Ready: Muncul saat client siap digunakan
 client.on("ready", async () => {
   isReady = true;
   console.log("WhatsApp client siap digunakan!");
 
   try {
-    console.log("Mengambil daftar grup...");
+    console.log("Mengambil daftar grup untuk cache...");
     const chats = await client.getChats();
     const groups = chats.filter((chat) => chat.isGroup);
 
+    groups.forEach((group) => {
+      groupNameCache[group.id._serialized] = group.name;
+    });
+
     if (groups.length > 0) {
-      console.log("\n--- DAFTAR GRUP WHATSAPP ANDA ---");
+      console.log("\n--- DAFTAR GRUP WHATSAPP ANDA (DICACHE) ---");
       groups.forEach((group, index) => {
         console.log(`${index + 1}. Nama: ${group.name} | ID: ${group.id._serialized}`);
       });
-      console.log("---------------------------------\n");
+      console.log("-------------------------------------------\n");
     } else {
       console.log("Tidak ditemukan grup di akun WhatsApp ini.");
     }
@@ -65,6 +74,15 @@ client.on("ready", async () => {
 
   if (readyPromiseResolver) readyPromiseResolver();
 });
+
+/**
+ * Mencoba mencocokkan ID dengan nama grup yang tersimpan di cache.
+ * @param {string} id
+ * @returns {string|null}
+ */
+const resolveRecipientName = (id) => {
+  return groupNameCache[id] || null;
+};
 
 // Event Auth Failure: Muncul jika autentikasi gagal
 client.on("auth_failure", (msg) => {
@@ -122,6 +140,7 @@ const sendMessage = async (recipient, message, recipientType) => {
 module.exports = {
   client,
   sendMessage,
+  resolveRecipientName,
   initialize: () => client.initialize(),
   isReady: () => isReady,
   readyPromise,

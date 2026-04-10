@@ -1,4 +1,5 @@
 const ReminderRepository = require("../repositories/reminderRepository");
+const whatsappClient = require("../config/whatsappClient");
 const {
   validatePhoneNumber,
   validateRecipientType,
@@ -21,7 +22,20 @@ const reminderService = {
    * @returns {Promise<Array>}
    */
   async getByUser(userId) {
-    return ReminderRepository.findByUserId(userId);
+    const reminders = await ReminderRepository.findByUserId(userId);
+    
+    // Perkaya data dengan nama grup jika tersedia di cache WhatsApp
+    return reminders.map(reminder => {
+      let recipientName = null;
+      if (reminder.recipient_type === 'group') {
+        recipientName = whatsappClient.resolveRecipientName(reminder.phone_number);
+      }
+      
+      return {
+        ...reminder,
+        recipient_name: recipientName
+      };
+    });
   },
 
   /**
