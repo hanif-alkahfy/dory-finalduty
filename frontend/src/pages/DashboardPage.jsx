@@ -70,6 +70,17 @@ export default function DashboardPage() {
     }
   };
 
+  const handleClearHistory = async () => {
+    if (!window.confirm('Hapus semua riwayat reminder yang sudah terkirim atau gagal?')) return;
+    
+    try {
+      await api.delete('/reminders/history/clear');
+      fetchReminders();
+    } catch (err) {
+      alert('Gagal membersihkan riwayat');
+    }
+  };
+
   const handleSave = async (data) => {
     try {
       if (editingReminder) {
@@ -80,7 +91,6 @@ export default function DashboardPage() {
       setShowForm(false);
       fetchReminders();
     } catch (err) {
-      // Error ditangani di dalam ReminderForm (throw error kembali ke form)
       throw err;
     }
   };
@@ -118,7 +128,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </nav>
-
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -126,16 +135,30 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-white mb-1">Reminder Manager</h1>
             <p className="text-slate-400 text-sm">Kelola jadwal pengiriman pesan WhatsApp otomatis Anda.</p>
           </div>
-          <button
-            id="btn-add-reminder"
-            onClick={handleCreate}
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition shadow-lg shadow-violet-500/20 active:scale-95"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Tambah Reminder
-          </button>
+          <div className="flex items-center gap-3">
+            {reminders.some(r => r.status === 'sent' || r.status === 'failed') && (
+              <button
+                onClick={handleClearHistory}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl transition border border-slate-700 active:scale-95"
+                title="Hapus semua riwayat pengiriman"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Bersihkan Riwayat
+              </button>
+            )}
+            <button
+              id="btn-add-reminder"
+              onClick={handleCreate}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl transition shadow-lg shadow-violet-500/20 active:scale-95"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Reminder
+            </button>
+          </div>
         </div>
 
         {/* Content Section */}

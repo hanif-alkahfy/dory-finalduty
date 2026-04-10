@@ -100,11 +100,30 @@ const reminderRepository = {
    * @param {string} status 'sent' atau 'failed'
    * @param {Date|null} sentAt
    */
+  /**
+   * Memperbarui status pengiriman reminder.
+   * @param {number} id
+   * @param {string} status 'sent' atau 'failed'
+   * @param {Date|null} sentAt
+   */
   async updateStatus(id, status, sentAt = null) {
     await pool.execute("UPDATE reminders SET status = ? WHERE id = ?", [
       status,
       id,
     ]);
+  },
+
+  /**
+   * Menghapus semua riwayat reminder (status 'sent' atau 'failed') untuk user tertentu.
+   * @param {number} userId
+   * @returns {Promise<number>} jumlah record yang dihapus
+   */
+  async deleteHistory(userId) {
+    const [result] = await pool.execute(
+      "DELETE FROM reminders WHERE user_id = ? AND status IN ('sent', 'failed')",
+      [userId]
+    );
+    return result.affectedRows;
   },
 };
 

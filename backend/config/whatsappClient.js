@@ -8,6 +8,7 @@ const qrcode = require("qrcode-terminal");
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
+    executablePath: process.env.CHROME_PATH || undefined,
     headless: true,
     args: [
       "--no-sandbox",
@@ -40,9 +41,28 @@ client.on("qr", (qr) => {
 });
 
 // Event Ready: Muncul saat client siap digunakan
-client.on("ready", () => {
+client.on("ready", async () => {
   isReady = true;
   console.log("WhatsApp client siap digunakan!");
+
+  try {
+    console.log("Mengambil daftar grup...");
+    const chats = await client.getChats();
+    const groups = chats.filter((chat) => chat.isGroup);
+
+    if (groups.length > 0) {
+      console.log("\n--- DAFTAR GRUP WHATSAPP ANDA ---");
+      groups.forEach((group, index) => {
+        console.log(`${index + 1}. Nama: ${group.name} | ID: ${group.id._serialized}`);
+      });
+      console.log("---------------------------------\n");
+    } else {
+      console.log("Tidak ditemukan grup di akun WhatsApp ini.");
+    }
+  } catch (err) {
+    console.error("Gagal mengambil daftar grup:", err.message);
+  }
+
   if (readyPromiseResolver) readyPromiseResolver();
 });
 
@@ -55,10 +75,18 @@ client.on("auth_failure", (msg) => {
   }
 });
 
+const MessageLogRepository = require("../repositories/messageLogRepository");
+const botService = require("../services/botService");
+
 // Event Disconnected: Muncul saat terputus
 client.on("disconnected", (reason) => {
   isReady = false;
   console.log("WhatsApp terputus:", reason);
+});
+
+// Event Message Create: Muncul saat ada pesan terkirim maupun masuk (termasuk dari diri sendiri)
+client.on("message_create", async (msg) => {
+  await botService.handleIntro(client, msg);
 });
 
 /**

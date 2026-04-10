@@ -125,14 +125,19 @@ const reminderService = {
       throw new ForbiddenError();
     }
 
-    if (reminder.status === "sent") {
-      throw new ValidationError(
-        400,
-        "Reminder yang sudah terkirim tidak dapat dihapus"
-      );
-    }
+    // MENGIZINKAN penghapusan reminder yang sudah dikirim (permintaan user)
+    // Sebelumnya ada pengecekan status === 'sent' di sini yang memblokir penghapusan.
 
     return ReminderRepository.delete(reminderId);
+  },
+
+  /**
+   * Menghapus semua riwayat reminder (sent/failed) milik user.
+   * @param {number} userId
+   * @returns {Promise<number>}
+   */
+  async deleteHistory(userId) {
+    return ReminderRepository.deleteHistory(userId);
   },
 };
 

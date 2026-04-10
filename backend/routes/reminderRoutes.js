@@ -14,6 +14,7 @@ router.use(authMiddleware);
 
 router.get("/", reminderController.getAll);
 router.post("/", reminderController.create);
+router.delete("/history/clear", reminderController.deleteHistory);
 router.put("/:id", reminderController.update);
 router.delete("/:id", reminderController.delete);
 

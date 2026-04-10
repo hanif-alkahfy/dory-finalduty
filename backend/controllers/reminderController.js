@@ -98,6 +98,24 @@ const reminderController = {
       next(err);
     }
   },
+
+  /**
+   * Handler untuk menghapus semua riwayat reminder (sent/failed).
+   * DELETE /reminders/history/clear
+   */
+  async deleteHistory(req, res, next) {
+    try {
+      const userId = req.user.user_id;
+      const count = await ReminderService.deleteHistory(userId);
+
+      res.status(200).json({
+        success: true,
+        message: `${count} riwayat reminder berhasil dibersihkan`,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
 };
 
 module.exports = reminderController;
