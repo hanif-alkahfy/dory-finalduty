@@ -10,7 +10,7 @@ const botService = {
    * @param {Object} msg objek pesan dari event 'message'
    */
   async handleIntro(client, msg) {
-    const TARGET_GROUP_ID = '120363411146663952@g.us';
+    const TARGET_GROUP_ID = '120363336442316101@g.us';
     const INTRO_SETTING_KEY = `intro_sent_${TARGET_GROUP_ID}`;
     const botId = client.info.wid._serialized;
 
@@ -29,7 +29,7 @@ const botService = {
 
     // 2. Filter Trigger: Harus tag bot DAN mengandung "hi dory"
     const botNumber = botId.split('@')[0];
-    
+
     // Deteksi lebih fleksibel:
     // - Mention resmi dari library
     // - Ada @nomor di dalam teks
@@ -37,9 +37,9 @@ const botService = {
     const hasTagPattern = new RegExp(`@${botNumber}`).test(body);
     const mentionsAny = msg.mentionedIds.length > 0;
     const isNamedDory = body.includes('dory');
-    
+
     const isMentioned = msg.mentionedIds.includes(botId) || hasTagPattern || (mentionsAny && isNamedDory);
-    
+
     console.log(`[BotService Debug] Bot: ${botNumber} | isMentioned: ${isMentioned} | Body: ${body}`);
 
     if (body.includes('hi dory') && isMentioned) {
@@ -55,10 +55,10 @@ const botService = {
         // 4. Kirim Respon
         const response = "Hi, I’m Dory. I will carry out my final duty as your personal reminder.";
         await client.sendMessage(TARGET_GROUP_ID, response);
-        
+
         // 5. Simpan Status ke Database
         await BotSettingRepository.set(INTRO_SETTING_KEY, '1');
-        
+
         console.log(`[BotService] Berhasil mengirim pesan intro dan menyimpan status ke database.`);
       } catch (err) {
         console.error(`[BotService] Gagal menangani intro:`, err.message);
