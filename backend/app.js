@@ -17,10 +17,10 @@ app.get("/health", (req, res) => {
 // Routes (akan didaftarkan di sini seiring perkembangan)
 const authRoutes = require("./routes/authRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
-// const messageRoutes = require("./routes/messageRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 app.use("/auth", authRoutes);
 app.use("/reminders", reminderRoutes);
-// app.use("/messages", messageRoutes);
+app.use("/messages", messageRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
