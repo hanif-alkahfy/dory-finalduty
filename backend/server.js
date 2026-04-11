@@ -5,7 +5,7 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
 
-// Penanganan error global agar server tidak mati saat auth timeout atau error lainnya
+// ─── Global error handler agar server tidak mati ──────────────────────────
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
@@ -14,35 +14,42 @@ process.on("uncaughtException", (err) => {
   console.error("Uncaught Exception:", err);
 });
 
-async function startServer() {
-  try {
-    // 1. Inisialisasi WhatsApp Client
-    console.log("Memulai inisialisasi WhatsApp...");
-    // await di sini untuk menangkap error sinkron saat inisialisasi (seperti browser lock)
-    await whatsappClient.initialize();
+// ─── Inisialisasi WhatsApp di background ─────────────────────────────────
+// Express dan Scheduler tidak menunggu WhatsApp siap.
+// WhatsApp akan siap setelah QR di-scan, dan server tetap berjalan normal.
+function initWhatsApp() {
+  console.log("[WhatsApp] Memulai inisialisasi...");
+  console.log("[WhatsApp] Menunggu QR Code atau sesi tersimpan...");
 
-    // 2. Tunggu hingga status siap (ready)
-    // readyPromise akan resolve saat event 'ready' di whatsappClient.js terpicu
-    // atau reject jika terjadi auth_failure
-    await whatsappClient.readyPromise;
+  whatsappClient.initialize().catch((err) => {
+    console.error("[WhatsApp] Gagal initialize:", err.message);
+    console.log("[WhatsApp] Tips: Hapus folder .wwebjs_auth/ lalu restart server untuk scan QR ulang.");
+  });
 
-    // 3. Tunggu 10 detik setelah siap
-    console.log("WhatsApp siap. Menunggu 10 detik sebelum memulai layanan lain (Scheduler & Express)...");
-    await new Promise(resolve => setTimeout(resolve, 10000));
-
-    // 4. Jalankan Reminder Scheduler
-    schedulerService.start();
-
-    // 5. Jalankan Express Server
-    app.listen(PORT, () => {
-      console.log(`Server berjalan di port ${PORT}`);
+  // Pantau status ready secara non-blocking
+  whatsappClient.readyPromise
+    .then(() => {
+      console.log("[WhatsApp] ✓ Siap digunakan. Scheduler dan API aktif.");
+    })
+    .catch((err) => {
+      console.error("[WhatsApp] Auth gagal:", err.message);
+      console.log("[WhatsApp] Server tetap berjalan. Restart untuk coba lagi.");
     });
-  } catch (error) {
-    console.error("CRITICAL ERROR: Gagal memulai server.");
-    console.error("Detail:", error.message);
-    console.log("Tips: Jika error berkaitan dengan 'browser is already running', coba tutup semua proses Chromium di Task Manager atau hapus folder .wwebjs_auth");
-    process.exit(1);
-  }
+}
+
+// ─── Start server ─────────────────────────────────────────────────────────
+async function startServer() {
+  // 1. Jalankan Express Server terlebih dahulu
+  app.listen(PORT, () => {
+    console.log(`[Server] Berjalan di port ${PORT}`);
+  });
+
+  // 2. Jalankan Scheduler
+  schedulerService.start();
+  console.log("[Scheduler] Aktif — memeriksa reminder setiap 1 menit.");
+
+  // 3. Inisialisasi WhatsApp di background (tidak blocking)
+  initWhatsApp();
 }
 
 startServer();

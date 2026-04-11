@@ -36,8 +36,10 @@ const readyPromise = new Promise((resolve, reject) => {
 // Event QR Code: Muncul saat pertama kali atau sesi habis
 client.on("qr", (qr) => {
   isReady = false;
-  console.log("Scan QR Code di bawah ini untuk login WhatsApp:");
+  console.log("\n[WhatsApp] QR Code siap di-scan:");
   qrcode.generate(qr, { small: true });
+  console.log("[WhatsApp] Buka WhatsApp di HP → Perangkat Tertaut → Tautkan Perangkat → Scan QR di atas.");
+  console.log("[WhatsApp] Menunggu scan...\n");
 });
 
 /**
@@ -48,10 +50,10 @@ const groupNameCache = {};
 // Event Ready: Muncul saat client siap digunakan
 client.on("ready", async () => {
   isReady = true;
-  console.log("WhatsApp client siap digunakan!");
+  console.log("\n[WhatsApp] ✓ Login berhasil! Client siap digunakan.\n");
 
   try {
-    console.log("Mengambil daftar grup untuk cache...");
+    console.log("[WhatsApp] Mengambil daftar grup untuk cache...");
     const chats = await client.getChats();
     const groups = chats.filter((chat) => chat.isGroup);
 
@@ -60,16 +62,16 @@ client.on("ready", async () => {
     });
 
     if (groups.length > 0) {
-      console.log("\n--- DAFTAR GRUP WHATSAPP ANDA (DICACHE) ---");
+      console.log("\n--- DAFTAR GRUP WHATSAPP (DICACHE) ---");
       groups.forEach((group, index) => {
-        console.log(`${index + 1}. Nama: ${group.name} | ID: ${group.id._serialized}`);
+        console.log(`${index + 1}. ${group.name} | ID: ${group.id._serialized}`);
       });
-      console.log("-------------------------------------------\n");
+      console.log("--------------------------------------\n");
     } else {
-      console.log("Tidak ditemukan grup di akun WhatsApp ini.");
+      console.log("[WhatsApp] Tidak ditemukan grup di akun ini.");
     }
   } catch (err) {
-    console.error("Gagal mengambil daftar grup:", err.message);
+    console.error("[WhatsApp] Gagal mengambil daftar grup:", err.message);
   }
 
   if (readyPromiseResolver) readyPromiseResolver();
@@ -87,7 +89,8 @@ const resolveRecipientName = (id) => {
 // Event Auth Failure: Muncul jika autentikasi gagal
 client.on("auth_failure", (msg) => {
   isReady = false;
-  console.error("Autentikasi WhatsApp gagal:", msg);
+  console.error("[WhatsApp] Autentikasi gagal:", msg);
+  console.log("[WhatsApp] Hapus folder .wwebjs_auth/ lalu restart server untuk scan QR ulang.");
   if (readyPromiseRejecter) {
     readyPromiseRejecter(new Error(`Autentikasi gagal: ${msg}`));
   }
@@ -99,7 +102,8 @@ const botService = require("../services/botService");
 // Event Disconnected: Muncul saat terputus
 client.on("disconnected", (reason) => {
   isReady = false;
-  console.log("WhatsApp terputus:", reason);
+  console.log("[WhatsApp] Terputus:", reason);
+  console.log("[WhatsApp] Mencoba reconnect otomatis...");
 });
 
 // Event Message Create: Muncul saat ada pesan terkirim maupun masuk (termasuk dari diri sendiri)
