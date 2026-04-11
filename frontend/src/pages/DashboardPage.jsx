@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import ReminderTable from '../components/ReminderTable';
 import ReminderForm from '../components/ReminderForm';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import AccountModal from '../components/AccountModal';
 
 export default function DashboardPage() {
   const { logout } = useAuth();
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   const fetchReminders = useCallback(async () => {
     setLoading(true);
@@ -117,6 +119,17 @@ export default function DashboardPage() {
               >
                 Pesan Manual
               </Link>
+              {/* Tombol Akun */}
+              <button
+                onClick={() => setShowAccountModal(true)}
+                className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:border-violet-500/50 transition flex items-center justify-center text-slate-400 hover:text-violet-400"
+                title="Kelola Akun"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </button>
               <button
                 id="btn-logout"
                 onClick={logout}
@@ -202,6 +215,11 @@ export default function DashboardPage() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setShowDeleteModal(false)}
       />
+
+      {/* Modal Akun */}
+      {showAccountModal && (
+        <AccountModal onClose={() => setShowAccountModal(false)} />
+      )}
 
       <footer className="py-6 border-t border-slate-800/50 text-center text-slate-600 text-xs">
         DoryMind System &copy; {new Date().getFullYear()} – All Rights Reserved
