@@ -1,14 +1,40 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+const path = require("path");
 
 /**
  * Konfigurasi WhatsApp Client dengan strategi LocalAuth.
  * Sesi akan disimpan di folder .wwebjs_auth/
  */
+
+// Cari Chrome di lokasi umum Windows jika CHROME_PATH tidak di-set
+function findChromePath() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+
+  const candidates = [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files\\Chromium\\Application\\chrome.exe",
+  ];
+
+  const fs = require("fs");
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      console.log(`[WhatsApp] Chrome ditemukan di: ${p}`);
+      return p;
+    }
+  }
+
+  console.log("[WhatsApp] Chrome tidak ditemukan di lokasi default, menggunakan Chromium bundled Puppeteer.");
+  return undefined;
+}
+
+const chromePath = findChromePath();
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    executablePath: process.env.CHROME_PATH || undefined,
+    executablePath: chromePath,
     headless: true,
     args: [
       "--no-sandbox",
@@ -18,6 +44,7 @@ const client = new Client({
       "--no-first-run",
       "--no-zygote",
       "--disable-gpu",
+      "--single-process",
     ],
   },
 });
@@ -31,6 +58,16 @@ let readyPromiseRejecter;
 const readyPromise = new Promise((resolve, reject) => {
   readyPromiseResolver = resolve;
   readyPromiseRejecter = reject;
+});
+
+// Event Loading Screen: Puppeteer berhasil launch, sedang load WhatsApp Web
+client.on("loading_screen", (percent, message) => {
+  if (percent === 0) {
+    console.log("[WhatsApp] Browser berhasil launch, memuat WhatsApp Web...");
+  }
+  if (percent === 100) {
+    console.log("[WhatsApp] WhatsApp Web selesai dimuat.");
+  }
 });
 
 // Event QR Code: Muncul saat pertama kali atau sesi habis
