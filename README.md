@@ -1,6 +1,6 @@
 # DoryMind – Final Duty
 
-Aplikasi web untuk mengelola dan mengirim reminder WhatsApp secara otomatis dan manual untuk rangkaian acara wisuda.
+Aplikasi web untuk mengelola dan mengirim reminder WhatsApp secara otomatis dan manual.
 
 ---
 
