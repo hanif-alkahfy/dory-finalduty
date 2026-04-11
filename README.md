@@ -1,12 +1,12 @@
 # DoryMind – Final Duty
 
-Aplikasi web untuk mengelola dan mengirim reminder WhatsApp secara otomatis dan manual.
+Aplikasi web untuk mengelola dan mengirim reminder WhatsApp secara otomatis dan manual untuk rangkaian acara wisuda.
 
 ---
 
 ## Deskripsi
 
-DoryMind – Final Duty memungkinkan panitia wisuda (admin) untuk:
+DoryMind – Final Duty memungkinkan admin untuk:
 - Menjadwalkan reminder WhatsApp ke nomor telepon atau grup WhatsApp
 - Mengirim pesan manual secara langsung
 - Memantau status pengiriman reminder (pending / sent / failed)
@@ -26,8 +26,8 @@ Sistem menggunakan scheduler otomatis yang berjalan setiap 1 menit untuk memasti
 | Scheduler  | node-cron                        |
 | Auth       | JWT + bcrypt                     |
 | Tunneling  | Cloudflare Tunnel (cloudflared)  |
-| Deploy BE  | Windows Server VPS + PM2         |
 | Deploy FE  | Vercel                           |
+| Deploy BE  | Windows Server VPS + PM2         |
 
 ---
 
@@ -78,16 +78,16 @@ dorymind-finalduty/
 
 ## API Endpoints
 
-| Method | Endpoint               | Auth | Deskripsi                    |
-|--------|------------------------|------|------------------------------|
-| POST   | /auth/login            | ✗    | Login admin                  |
-| GET    | /reminders             | ✓    | Daftar reminder milik admin  |
-| POST   | /reminders             | ✓    | Buat reminder baru           |
-| PUT    | /reminders/:id         | ✓    | Edit reminder (pending only) |
-| DELETE | /reminders/:id         | ✓    | Hapus reminder               |
-| DELETE | /reminders/history/clear | ✓  | Hapus semua riwayat          |
-| POST   | /messages/send         | ✓    | Kirim pesan manual           |
-| GET    | /health                | ✗    | Health check server          |
+| Method | Endpoint                 | Auth | Deskripsi                    |
+|--------|--------------------------|------|------------------------------|
+| POST   | /auth/login              | ✗    | Login admin                  |
+| GET    | /reminders               | ✓    | Daftar reminder milik admin  |
+| POST   | /reminders               | ✓    | Buat reminder baru           |
+| PUT    | /reminders/:id           | ✓    | Edit reminder (pending only) |
+| DELETE | /reminders/:id           | ✓    | Hapus reminder               |
+| DELETE | /reminders/history/clear | ✓    | Hapus semua riwayat          |
+| POST   | /messages/send           | ✓    | Kirim pesan manual           |
+| GET    | /health                  | ✗    | Health check server          |
 
 ---
 
@@ -100,7 +100,7 @@ dorymind-finalduty/
 - MySQL 8.x ([dev.mysql.com](https://dev.mysql.com/downloads/installer/))
 - Git ([git-scm.com](https://git-scm.com))
 - PM2: `npm install -g pm2`
-- cloudflared: download dari [developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+- cloudflared: download dari [developers.cloudflare.com](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
 
 ---
 
@@ -143,7 +143,10 @@ ADMIN_EMAIL=admin@dorymind.com
 ADMIN_PASSWORD=ganti_password_ini
 ```
 
-> `ADMIN_EMAIL` dan `ADMIN_PASSWORD` digunakan oleh `setup.js` untuk membuat akun admin pertama.
+> Generate JWT_SECRET yang aman:
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+> ```
 
 ---
 
@@ -310,7 +313,7 @@ Lalu redeploy frontend.
    ```
    VITE_API_URL = https://api.domain-kamu.com
    ```
-5. Deploy — Vercel otomatis build dan deploy
+5. Deploy — Vercel otomatis build dan deploy setiap push ke `main`
 
 ---
 
@@ -320,10 +323,10 @@ Lalu redeploy frontend.
 
 ```bash
 cd backend
-cp .env.example .env
+copy .env.example .env
 # isi konfigurasi .env
 npm install
-npm run setup     # migrate + seed database
+npm run setup     # migrate + seed database (jalankan sekali)
 npm run dev       # nodemon (auto-restart)
 ```
 
@@ -331,7 +334,7 @@ npm run dev       # nodemon (auto-restart)
 
 ```bash
 cd frontend
-cp .env.example .env
+copy .env.example .env
 # isi VITE_API_URL=http://localhost:3000
 npm install
 npm run dev
@@ -371,22 +374,23 @@ Cakupan test:
 
 ### Backend (`.env`)
 
-| Variable       | Deskripsi                              | Default              |
-|----------------|----------------------------------------|----------------------|
-| PORT           | Port server Express                    | 3000                 |
-| DB_HOST        | Host MySQL                             | localhost            |
-| DB_USER        | Username MySQL                         | root                 |
-| DB_PASS        | Password MySQL                         | (kosong)             |
-| DB_NAME        | Nama database                          | dorymind             |
-| JWT_SECRET     | Secret key untuk JWT (wajib diganti)   | -                    |
-| ADMIN_EMAIL    | Email admin default (untuk setup.js)   | admin@dorymind.com   |
-| ADMIN_PASSWORD | Password admin default (untuk setup.js)| admin123             |
+| Variable       | Deskripsi                               | Default            |
+|----------------|-----------------------------------------|--------------------|
+| PORT           | Port server Express                     | 3000               |
+| DB_HOST        | Host MySQL                              | localhost          |
+| DB_USER        | Username MySQL                          | root               |
+| DB_PASS        | Password MySQL                          | (kosong)           |
+| DB_NAME        | Nama database                           | dorymind           |
+| JWT_SECRET     | Secret key untuk JWT (wajib diganti)    | -                  |
+| ADMIN_EMAIL    | Email admin default (untuk setup.js)    | admin@dorymind.com |
+| ADMIN_PASSWORD | Password admin default (untuk setup.js) | admin123           |
+| CHROME_PATH    | Path Chrome custom untuk wwebjs (opsional) | (kosong)        |
 
 ### Frontend (`.env`)
 
-| Variable      | Deskripsi              | Default               |
-|---------------|------------------------|-----------------------|
-| VITE_API_URL  | URL backend API        | http://localhost:3000 |
+| Variable     | Deskripsi         | Default               |
+|--------------|-------------------|-----------------------|
+| VITE_API_URL | URL backend API   | http://localhost:3000 |
 
 ---
 
